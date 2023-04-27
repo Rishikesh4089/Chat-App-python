@@ -2,7 +2,8 @@ from tkinter import *
 from tkinter import Tk, Frame, Scrollbar, Label, END, Entry, Text, VERTICAL, Button, messagebox #Tkinter Python Module for GUI  
 import base64
 import socket #Sockets for network connection
-import threading # for multiple proccess 
+import threading # for multiple proccess
+import frames_run as frr
 
 class Encoder:
     client_socket = None
@@ -24,6 +25,7 @@ class Encoder:
         self.initialize_gui()
         self.listen_for_incoming_messages_in_a_thread()
 
+    #Initializing socket
     def initialize_socket(self):
         self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # initialazing socket with TCP and IPv4
         remote_ip = '127.0.0.1'  # IP address
@@ -39,6 +41,7 @@ class Encoder:
         self.display_chat_entry_box()
         self.display_chat_box()
 
+    #To receive messages
     def listen_for_incoming_messages_in_a_thread(self):
         thread = threading.Thread(target=self.receive_message_from_server,
                                   args=(self.client_socket,))  # Create a thread for the send and receive in same time
@@ -72,7 +75,7 @@ class Encoder:
         frame.pack(side='top', anchor='nw')
 
 
-    #Funciton to encode message
+    #Function to encode message
     def Encode(self, key,message):
         enc=[]
 
@@ -99,7 +102,13 @@ class Encoder:
             self.dec.append(chr((256 + ord(message[i])- ord(key_c)) % 256))
         return "".join(dec)
 
-    #Function to set the mode
+    #Function to input mode
+    def Mode_set(self):
+        frame = Frame()
+        Label(frame, font = 'arial 12 bold', text ='MODE(e-encode, d-decode)').place(x=60, y = 120)
+        self.get_mode = Entry(frame, font = 'arial 10', textvariable = mode , bg= 'ghost white').place(x=290, y = 120)
+
+    #Function to process the mode
     def Mode(self):
         if(self.mode.get() == 'e'):
             Result.set(Encode(private_key.get(), Text.get()))
@@ -120,12 +129,20 @@ class Encoder:
     def Reset_button(self):
         frame = Frame()
         self.reset_butt = Button(frame, font='arial 10 bold', text='RESET', width=6, bg='LimeGreen', padx=2, command=self.Reset).place(x=80,y=190)
+        frame.pack(side='left')
 
-    #Function to get Result
+    #Function to get send message
     def Result(self):
         frame=Frame()
         self.result_generate = Button(frame, font = 'arial 10 bold', text = 'RESULT'  ,padx =2,bg ='LightGray' ,command = self.Mode).place(x=60, y = 150)
-        self.get_result = Entry(frame, font = 'arial 10 bold', textvariable = self.Result, bg ='ghost white').place(x=290, y = 150)
+        senders_name = self.name_widget.get().strip() + ": "
+        message = (senders_name + RESULT).encode('utf-8')
+        self.chat_transcript_area.insert('end', message.decode('utf-8') + '\n')
+        self.chat_transcript_area.yview(END)
+        self.client_socket.send(message)
+        self.enter_text_widget.delete(1.0, 'end')
+        return 'break'
+        frame.pack(side='center')
     
 
     def display_name_section(self):
@@ -158,8 +175,7 @@ class Encoder:
 
     def on_join(self):
         if len(self.name_widget.get()) == 0:
-            messagebox.showerror(
-                "Enter your name", "Enter your name to send a message")
+            messagebox.showerror( "Enter your name", "Enter your name to send a message")
             return
         self.name_widget.config(state='disabled')
         self.client_socket.send(("joined:" + self.name_widget.get()).encode('utf-8'))
@@ -174,37 +190,26 @@ class Encoder:
     def clear_text(self):
         self.enter_text_widget.delete(1.0, 'end')
 
-    def send_chat(self):
-        senders_name = self.name_widget.get().strip() + ": "
-        data = self.enter_text_widget.get(1.0, 'end').strip()
-        message = (senders_name + data).encode('utf-8')
-        self.chat_transcript_area.insert('end', message.decode('utf-8') + '\n')
-        self.chat_transcript_area.yview(END)
-        self.client_socket.send(message)
-        self.enter_text_widget.delete(1.0, 'end')
-        return 'break'
+    #def send_chat(self):
+     #   senders_name = self.name_widget.get().strip() + ": "
+     #   data = self.enter_text_widget.get(1.0, 'end').strip()
+     #   message = (senders_name + data).encode('utf-8')
+     #   self.chat_transcript_area.insert('end', message.decode('utf-8') + '\n')
+     #   self.chat_transcript_area.yview(END)
+     #   self.client_socket.send(message)
+     #   self.enter_text_widget.delete(1.0, 'end')
+     #   return 'break'
 
-    def on_close_window(self):
-        if messagebox.askokcancel("Quit", "Do you want to quit?"):
-            self.root.destroy()
-            self.client_socket.close()
-            exit(0)
+    #Function to go to home page
+    def Go_home(self):
+        frame = Frame()
+        self.home_button = Button(frame, text ="Home", command = lambda : controller.frr.show_frame(StartPage))
+        frame.pack(side='bottom')
 
-#the mail function
+
+#the main function
 if __name__ == '__main__':
     root = Tk()
     gui = Encoder(root)
     root.protocol("WM_DELETE_WINDOW", Encoder.on_close_window)
     root.mainloop()
-
-Label(root, font= 'arial 12 bold', text='MESSAGE').place(x= 60,y=60)
-Entry(root, font = 'arial 10', textvariable = Text, bg = 'ghost white').place(x=290, y = 60)
-
-
-Label(root, font = 'arial 12 bold', text ='MODE(e-encode, d-decode)').place(x=60, y = 120)
-Entry(root, font = 'arial 10', textvariable = mode , bg= 'ghost white').place(x=290, y = 120)
-
-
-
-
-Button(root, font = 'arial 10 bold',text= 'EXIT' , width = 6, command = Exit,bg = 'OrangeRed', padx=2, pady=2).place(x=180, y = 190)
