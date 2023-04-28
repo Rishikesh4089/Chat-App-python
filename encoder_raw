@@ -9,7 +9,7 @@ root.title("ENCODER DECODER (for python project)")
 
 Label(root, text ='ENCODE DECODE', font = 'arial 20 bold').pack()
 
-Label(root, text ='By B029, B038, B036', font = 'arial 20 bold').pack(side =BOTTOM)
+Label(root, text ='By B029, B038, B063', font = 'arial 20 bold').pack(side =BOTTOM)
 
 Text = StringVar()
 private_key = StringVar()
