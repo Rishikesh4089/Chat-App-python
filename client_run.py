@@ -4,6 +4,7 @@ import threading
 import tkinter as tk
 from tkinter import scrolledtext
 from tkinter import messagebox
+import frames_run as frr
 
 HOST = '127.0.0.1'
 PORT = 10319
@@ -94,6 +95,7 @@ message_box = scrolledtext.ScrolledText(middle_frame, font=SMALL_FONT, bg=MEDIUM
 message_box.config(state=tk.DISABLED)
 message_box.pack(side=tk.TOP)
 
+home_button = tk.Button(top_frame, text="Home", font=BUTTON_FONT, bg=OCEAN_BLUE, fg=WHITE, command= lambda : controller.frr.show_frame(Page2)))
 
 def listen_for_messages_from_server(client):
 
@@ -108,8 +110,8 @@ def listen_for_messages_from_server(client):
             
         else:
             messagebox.showerror("Error", "Message recevied from client is empty")
-
-# main function
+            
+            # main function
 def main():
 
     root.mainloop()
